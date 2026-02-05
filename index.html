@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>One_Varse - Login</title>
+
+  <link rel="preconnect" href="https://files.catbox.moe" crossorigin>
+  <style>
+    :root {
+      --primary: #A900FF;
+      --secondary: #7600FF;
+      --text: #FF000F;
+      --muted: #7100CD;
+      --input-bg: rgba(40, 40, 70, 0.7);
+      --card-bg: rgba(0, 0, 0, 0.35);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Exo 2', sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: black;
+    }
+
+    #bg-video {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    .container { width: 100%; max-width: 400px; padding: 20px; z-index: 1; }
+
+    .card {
+      background-color: var(--card-bg);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.1); 
+      backdrop-filter: blur(8px);
+      text-align: center;
+    }
+
+    .form-group { position: relative; margin-bottom: 20px; }
+    .form-group i {
+      position: absolute; left: 15px; top: 50%;
+      transform: translateY(-50%); color: var(--secondary);
+    }
+
+    input {
+      width: 100%; padding: 15px 15px 15px 45px;
+      border: none; border-radius: 10px;
+      background-color: var(--input-bg); color: white;
+      outline: none; box-shadow: 0 0 5px 2px rgba(255, 51, 51, 0.4);
+    }
+
+    .btn-main {
+      width: 100%; padding: 15px; border: none; border-radius: 10px;
+      background-color: var(--primary); color: white;
+      font-weight: bold; cursor: pointer; transition: 0.3s;
+      box-shadow: 0 0 10px 2px rgba(255, 51, 51, 0.6);
+      margin-bottom: 15px;
+    }
+
+    .btn-google {
+      width: 100%; padding: 12px; border: none; border-radius: 10px;
+      background-color: white; color: #333;
+      font-weight: 600; cursor: pointer; transition: 0.3s;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+
+    .btn-google:hover { background-color: #eee; transform: scale(1.02); }
+    .btn-main:hover { transform: translateY(-2px); box-shadow: 0 0 20px var(--primary); }
+
+    #toast {
+      position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+      padding: 12px 25px; border-radius: 8px; display: none; z-index: 1000;
+      color: white; font-weight: bold; text-align: center;
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+
+  <video autoplay loop muted playsinline id="bg-video">
+    <source src="api.mp4" type="video/mp4">
+  </video>
+
+  <div id="toast"></div>
+
+  <div class="container">
+    <div class="card">
+      <h1 style="margin-bottom: 25px; letter-spacing: 5px; color: var(--primary);">LOGIN</h1>
+      
+      <form id="loginForm">
+        <div class="form-group">
+          <i class="fas fa-envelope"></i>
+          <input type="email" id="email" placeholder="Email Address" required />
+        </div>
+        <div class="form-group">
+          <i class="fas fa-lock"></i>
+          <input type="password" id="password" placeholder="Password" required />
+        </div>
+        <button type="submit" class="btn-main" id="btnLogin">
+          <i class="fas fa-sign-in-alt"></i> M A S U K
+        </button>
+      </form>
+
+      <div style="margin: 15px 0; color: #777;">ATAU</div>
+
+      <button type="button" class="btn-google" id="btnGoogle">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20">
+        Masuk dengan Google
+      </button>
+
+      <div style="margin-top: 25px; font-size: 0.7rem; color: var(--muted); letter-spacing: 2px;">
+        © 2025 ONE-VARSE
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { 
+      getAuth, 
+      signInWithEmailAndPassword, 
+      GoogleAuthProvider, 
+      signInWithPopup 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    // Konfigurasi Firebase Anda
+    const firebaseConfig = {
+      apiKey: "AIzaSyAgSrynp2q9Z1T6mc5nyDOrSuARWv_vzow",
+      authDomain: "webb-ziper.firebaseapp.com",
+      projectId: "webb-ziper",
+      storageBucket: "webb-ziper.firebasestorage.app",
+      messagingSenderId: "125909795147",
+      appId: "1:125909795147:web:a24a9fa31511a5d9c468ce"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    const loginForm = document.getElementById('loginForm');
+    const btnGoogle = document.getElementById('btnGoogle');
+    const toast = document.getElementById('toast');
+
+    // --- LOGIN EMAIL/PASSWORD ---
+loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    showToast("Login Berhasil!", "#2ecc71");
+    setTimeout(() => { window.location.href = "https://ziperr-storeg.vercel.app/"; }, 1500);
+  } catch (error) {
+    console.error("Error Detail:", error.message); // Biar lu bisa liat error aslinya di Inspect Element
+    showToast("Login Gagal: " + error.code, "#e74c3c");
+  }
+});
+
+// --- LOGIN GOOGLE ---
+btnGoogle.addEventListener('click', async () => {
+  try {
+    const result = await signInWithPopup(auth, provider);
+    showToast("Google Login Berhasil!", "#2ecc71");
+    setTimeout(() => { window.location.href = "https://ziperr-storeg.vercel.app/"; }, 1500);
+  } catch (error) {
+    console.error("Error Google:", error.message);
+    // Jika muncul error "auth/unauthorized-domain", berarti poin nomor 1 belum lu lakuin
+    showToast("Gagal Login Google", "#e74c3c");
+  }
+});
+
+  </script>
+</body>
+</html>
